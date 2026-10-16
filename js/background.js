@@ -16,8 +16,10 @@ export function initBackground() {
     (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 
   function resize() {
-    W = canvas.clientWidth = window.innerWidth;
-    H = canvas.clientHeight = window.innerHeight;
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
     canvas.width = Math.floor(W * dpr);
     canvas.height = Math.floor(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
