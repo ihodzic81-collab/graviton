@@ -1,0 +1,20 @@
+{
+  "name": "GRAVITON",
+  "short_name": "GRAVITON",
+  "description": "Mobilna igra u kojoj se pravila fizike menjaju.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#07030f",
+  "theme_color": "#6b2cf5",
+  "lang": "sr",
+  "icons": [
+    {
+      "src": "assets/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
