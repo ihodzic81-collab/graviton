@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#07030f" />
+  <meta name="description" content="GRAVITON — mobilna igra u kojoj se pravila fizike menjaju." />
+  <title>GRAVITON</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/menus.css" />
+  <link rel="stylesheet" href="css/game.css" />
+</head>
+<body>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+  <div class="bg-vignette" aria-hidden="true"></div>
+
+  <div id="app" class="app">
+    <header class="topbar" id="topbar">
+      <button class="icon-btn" id="btn-profile" aria-label="Profil">
+        <span class="icon-avatar" aria-hidden="true"></span>
+      </button>
+      <div class="logo-small" aria-hidden="true">GRAVITON</div>
+      <div class="topbar-right">
+        <div class="currency" title="PULS">
+          <span class="currency-dot" aria-hidden="true"></span>
+          <span id="puls-value">0</span>
+        </div>
+        <button class="icon-btn" id="btn-settings" aria-label="Podešavanja">
+          <span class="icon-gear" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="screens" class="screens">
+      <section class="screen screen--home is-active" data-screen="home">
+        <div class="hero">
+          <div class="hero-glow" aria-hidden="true"></div>
+          <h1 class="title">
+            <span class="title-main">GRAVITON</span>
+          </h1>
+          <p class="tagline">SVET IMA SVOJA PRAVILA.<br /><span>OVDE IH NEMA.</span></p>
+
+          <button class="btn btn--primary btn--big" id="btn-play">
+            <span id="btn-play-label">ZAPOČNI IGRU</span>
+            <span class="btn-arrow" aria-hidden="true">▶</span>
+          </button>
+
+          <div class="feature-row" aria-hidden="true">
+            <span class="feature">∞ Nema instalacije</span>
+            <span class="feature">📱 Radi na svim uređajima</span>
+            <span class="feature">👥 Podeli sa prijateljima</span>
+          </div>
+        </div>
+
+        <nav class="quick-nav" aria-label="Brza navigacija">
+          <button class="quick-btn" data-nav="daily">
+            <span class="quick-ico">★</span>
+            <span class="quick-txt">Dnevni izazov</span>
+          </button>
+          <button class="quick-btn" data-nav="levels">
+            <span class="quick-ico">◈</span>
+            <span class="quick-txt">Izbor nivoa</span>
+          </button>
+          <button class="quick-btn" data-nav="collection">
+            <span class="quick-ico">◉</span>
+            <span class="quick-txt">Kolekcija</span>
+          </button>
+        </nav>
+
+        <p class="hint">Dodirni igraj i otkrij šta se dešava kada gravitacija poludi.</p>
+      </section>
+
+      <section class="screen screen--levels" data-screen="levels">
+        <header class="screen-head">
+          <button class="icon-btn back" data-nav="home" aria-label="Nazad">←</button>
+          <h2>IZBOR NIVOA</h2>
+          <span class="spacer"></span>
+        </header>
+        <div class="chapter">
+          <h3 class="chapter-title">POGLAVLJE 1 — POREMEĆAJ GRAVITACIJE</h3>
+          <div id="levels-grid" class="levels-grid"></div>
+          <p class="notice" id="levels-notice">
+            Nivoi se otključavaju igranjem. Kompletna igra stiže u narednoj fazi.
+          </p>
+        </div>
+      </section>
+
+      <section class="screen screen--daily" data-screen="daily">
+        <header class="screen-head">
+          <button class="icon-btn back" data-nav="home" aria-label="Nazad">←</button>
+          <h2>DNEVNI IZAZOV</h2>
+          <span class="spacer"></span>
+        </header>
+        <div class="card card--daily">
+          <div class="card-badge" id="daily-badge">DANAS</div>
+          <h3 id="daily-title">Uskoro</h3>
+          <p id="daily-desc">
+            Dnevni izazovi se otključavaju nakon što savladaš prva četiri nivoa.
+          </p>
+          <div class="daily-reward">
+            <span>Nagrada:</span>
+            <strong id="daily-reward">+50 PULS</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen screen--collection" data-screen="collection">
+        <header class="screen-head">
+          <button class="icon-btn back" data-nav="home" aria-label="Nazad">←</button>
+          <h2>KOLEKCIJA</h2>
+          <span class="spacer"></span>
+        </header>
+        <p class="notice">
+          Ovde će biti prikazani skinovi kugle. Struktura je spremna — sadržaj dolazi u Fazi 4.
+        </p>
+        <div id="skins-grid" class="skins-grid"></div>
+      </section>
+
+      <section class="screen screen--profile" data-screen="profile">
+        <header class="screen-head">
+          <button class="icon-btn back" data-nav="home" aria-label="Nazad">←</button>
+          <h2>PROFIL</h2>
+          <span class="spacer"></span>
+        </header>
+        <div class="profile-card">
+          <div class="avatar-big" aria-hidden="true"></div>
+          <label class="field">
+            <span>Nadimak</span>
+            <input id="nickname" type="text" maxlength="16" placeholder="Igrač" />
+          </label>
+          <div class="stats">
+            <div class="stat"><span class="stat-num" id="stat-levels">0</span><span class="stat-lbl">Završeni nivoi</span></div>
+            <div class="stat"><span class="stat-num" id="stat-puls">0</span><span class="stat-lbl">PULS</span></div>
+            <div class="stat"><span class="stat-num" id="stat-badges">0</span><span class="stat-lbl">Značke</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen screen--settings" data-screen="settings">
+        <header class="screen-head">
+          <button class="icon-btn back" data-nav="home" aria-label="Nazad">←</button>
+          <h2>PODEŠAVANJA</h2>
+          <span class="spacer"></span>
+        </header>
+        <ul class="settings-list">
+          <li><label><input type="checkbox" id="opt-music" /> Muzika</label></li>
+          <li><label><input type="checkbox" id="opt-sfx" /> Zvučni efekti</label></li>
+          <li><label><input type="checkbox" id="opt-reduced" /> Smanjene animacije</label></li>
+          <li>
+            <label>
+              Jezik
+              <select id="opt-lang">
+                <option value="sr">Srpski</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+          </li>
+        </ul>
+        <button class="btn btn--danger" id="btn-reset">Resetuj napredak</button>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Glavna navigacija">
+      <button class="nav-btn is-active" data-nav="home"><span class="nav-ico">⌂</span><span>Početna</span></button>
+      <button class="nav-btn" data-nav="levels"><span class="nav-ico">◈</span><span>Nivoi</span></button>
+      <button class="nav-btn" data-nav="daily"><span class="nav-ico">★</span><span>Izazov</span></button>
+      <button class="nav-btn" data-nav="collection"><span class="nav-ico">◉</span><span>Kolekcija</span></button>
+      <button class="nav-btn" data-nav="profile"><span class="nav-ico">☻</span><span>Profil</span></button>
+    </nav>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
