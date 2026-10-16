@@ -11,11 +11,11 @@ export const FRICTION = 0.86;      // trenje (0–1) — koliko brzo se zaustavl
 export const JUMP_VELOCITY = -720; // px/s — početna brzina skoka
 
 // AABB sudar (axis-aligned bounding box)
-export function rectsOverlap(a, b) {
-  return a.x < b.x + b.w &&
-         a.x + a.w > b.x &&
-         a.y < b.y + b.h &&
-         a.y + a.h > b.y;
+function overlap(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx + bw &&
+         ax + aw > bx &&
+         ay < by + bh &&
+         ay + ah > by;
 }
 
 // Rešavanje sudara igrača sa platformama.
@@ -23,10 +23,10 @@ export function rectsOverlap(a, b) {
 export function resolveCollisions(player, platforms, dt) {
   const result = { onGround: false, hitCeiling: false, hitLeft: false, hitRight: false };
 
-  // Pomeramo igrača po X, pa po Y (odvojeno) — standardna tehnika
+  // Pomeramo igrača po X, pa po Y (odvojeno)
   player.x += player.vx * dt;
   for (const p of platforms) {
-    if (rectsOverlap(player.aabb, p)) {
+    if (overlap(player.x, player.y, player.w, player.h, p.x, p.y, p.w, p.h)) {
       if (player.vx > 0) {
         player.x = p.x - player.w;
         result.hitRight = true;
@@ -40,7 +40,7 @@ export function resolveCollisions(player, platforms, dt) {
 
   player.y += player.vy * dt;
   for (const p of platforms) {
-    if (rectsOverlap(player.aabb, p)) {
+    if (overlap(player.x, player.y, player.w, player.h, p.x, p.y, p.w, p.h)) {
       if (player.vy > 0) {
         player.y = p.y - player.h;
         player.vy = 0;
