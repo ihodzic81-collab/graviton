@@ -394,3 +394,54 @@
 /* ---------- SMANJENE ANIMACIJE ---------- */
 body.reduced-motion .joystick-knob { transition: none; }
 body.reduced-motion .action-btn { transition: none; }
+/* ---------- ZVEZDICE U EKRANU POBEDE ---------- */
+#win-stars {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  font-size: 42px;
+  color: #ffd86b;
+}
+
+.win-star {
+  display: inline-block;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  text-shadow: 0 0 24px currentColor;
+}
+
+.win-star.earned {
+  color: #ffd86b;
+  filter: drop-shadow(0 0 20px #ffd86b);
+}
+
+/* ---------- FRAGMENTI U HUD-u ---------- */
+.hud-fragments {
+  font-size: 12px;
+  color: #ffb35c;
+  letter-spacing: 2px;
+  font-weight: 700;
+  margin-top: 4px;
+  text-shadow: 0 0 10px #ffb35c;
+  display: none;
+}
+
+/* ---------- DUGME ROTACIJA ---------- */
+.btn-rotate {
+  border-color: rgba(255, 179, 92, 0.6);
+  background: radial-gradient(circle at 50% 30%,
+    rgba(255, 179, 92, 0.5) 0%,
+    rgba(255, 179, 92, 0.25) 70%,
+    rgba(255, 179, 92, 0.1) 100%);
+  color: #fff;
+  box-shadow:
+    0 0 24px rgba(255, 179, 92, 0.45),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+  width: 64px;
+  height: 64px;
+  font-size: 10px;
+}
+
+/* ---------- TRIGGER ZA DUGMAD ---------- */
+.action-buttons {
+  gap: 10px;
+}
