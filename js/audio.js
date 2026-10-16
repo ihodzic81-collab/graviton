@@ -11,7 +11,6 @@ let sfxGain = null;
 let musicNodes = [];
 let musicTimer = null;
 let ambientStarted = false;
-
 let currentSettings = { music: true, sfx: true };
 
 // ---------- INICIJALIZACIJA ----------
@@ -179,8 +178,6 @@ export function sfxWin() {
 // Mistični, opuštajući pad — bez prekida.
 // Bazni drone je sada mnogo tiši i filtriran, da ne bude nametljiv.
 
-let ambientStarted = false;
-
 export function startAmbientMusic() {
   if (!ctx || ambientStarted) return;
   ambientStarted = true;
@@ -192,13 +189,12 @@ export function startAmbientMusic() {
   ambientFilter.Q.value = 0.5;
   ambientFilter.connect(musicGain);
 
-  // Bazni drone — sada sa mnogo tišim gain-om (0.025 umesto 0.08)
-  // i jednim oscilatorom umesto dva — manje "hum"
+  // Bazni drone — sada sa mnogo tišim gain-om
   const droneFreqs = [82.41]; // E2 — dublji, topliji ton
-  droneFreqs.forEach((f, i) => {
+  droneFreqs.forEach((f) => {
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
-    osc.type = "sine"; // sine je najmirniji
+    osc.type = "sine";
     osc.frequency.value = f;
     g.gain.value = 0.025; // veoma tiho
     osc.connect(g);
@@ -207,7 +203,7 @@ export function startAmbientMusic() {
     musicNodes.push({ osc, g });
   });
 
-  // Blagi "padajući" LFO za mističan efekat — ali diskretan
+  // Blagi "padajući" LFO za mističan efekat — diskretan
   const lfo = ctx.createOscillator();
   const lfoGain = ctx.createGain();
   lfo.frequency.value = 0.05;
@@ -219,7 +215,7 @@ export function startAmbientMusic() {
   lfo.start();
   musicNodes.push({ osc: lfo, g: lfoGain });
 
-  // Melodija — povremeni tonovi, sada ređi i tiši
+  // Melodija — povremeni tonovi, ređi i tiši
   const scale = [523.25, 587.33, 659.25, 783.99, 880];
   function scheduleNote() {
     if (!ctx) return;
@@ -234,7 +230,7 @@ export function startAmbientMusic() {
       osc.type = "sine";
       osc.frequency.value = freq;
       g.gain.setValueAtTime(0, now());
-      g.gain.linearRampToValueAtTime(0.04, now() + 1.2); // tiše
+      g.gain.linearRampToValueAtTime(0.04, now() + 1.2);
       g.gain.exponentialRampToValueAtTime(0.0001, now() + 4.5);
       osc.connect(noteFilter);
       noteFilter.connect(g);
@@ -242,7 +238,6 @@ export function startAmbientMusic() {
       osc.start();
       osc.stop(now() + 5);
     }
-    // Interval 4–8 sekundi — ređe, mirnije
     musicTimer = setTimeout(scheduleNote, 4000 + Math.random() * 4000);
   }
   setTimeout(scheduleNote, 2500);
@@ -258,8 +253,6 @@ export function stopAmbientMusic() {
 }
 
 // ---------- DINAMIKA ----------
-// Muzika prati stanje igre, ali sa mnogo manjim promenama.
-// state: "idle" | "moving" | "falling" | "win"
 export function updateMusicDynamics(state) {
   if (!ctx || !musicGain) return;
   let target = 0.12;
