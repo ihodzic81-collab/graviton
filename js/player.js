@@ -6,7 +6,6 @@ import {
   applyGravity,
   applyHorizontalInput,
   resolveCollisions,
-  jump,
   JUMP_VELOCITY
 } from "./physics.js";
 import { spawnTrail } from "./effects.js";
@@ -20,13 +19,13 @@ export function createPlayer(x, y) {
     h: size,
     vx: 0,
     vy: 0,
-    gravityDir: 1,           // 1 = dole, -1 = gore
+    gravityDir: 1,
     canJump: true,
-    coyoteTime: 0,           // milostivi period posle napuštanja platforme
-    jumpBuffer: 0,           // buffered skok pre nego što sleti
+    coyoteTime: 0,
+    jumpBuffer: 0,
     alive: true,
-    spawnAnim: 0,            // 0 = normalno, >0 = respawn animacija
-    trailHue: 275,           // ljubičasta
+    spawnAnim: 0,
+    trailHue: 275,
     onGround: false,
     hitCeiling: false,
     hitWall: false
@@ -36,7 +35,6 @@ export function createPlayer(x, y) {
 export function updatePlayer(player, input, level, dt) {
   if (!player.alive) return;
 
-  // Respawn animacija — kugla se ne pomera
   if (player.spawnAnim > 0) {
     player.spawnAnim -= dt;
     player.vx = 0;
@@ -103,7 +101,6 @@ export function drawPlayer(ctx, player, camera, time) {
   const cy = player.y + player.h / 2 - camera.y;
   const r = player.w / 2;
 
-  // Respawn animacija — kugla izlazi iz portala
   let scale = 1;
   let alpha = 1;
   if (player.spawnAnim > 0) {
@@ -115,7 +112,6 @@ export function drawPlayer(ctx, player, camera, time) {
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Spoljni sjaj
   const glow = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 3);
   glow.addColorStop(0, `hsla(${player.trailHue}, 100%, 75%, 0.5)`);
   glow.addColorStop(1, `hsla(${player.trailHue}, 100%, 75%, 0)`);
@@ -124,7 +120,6 @@ export function drawPlayer(ctx, player, camera, time) {
   ctx.arc(cx, cy, r * 3 * scale, 0, Math.PI * 2);
   ctx.fill();
 
-  // Telo kugle
   const body = ctx.createRadialGradient(
     cx - r * 0.3, cy - r * 0.3, r * 0.1,
     cx, cy, r
@@ -139,14 +134,12 @@ export function drawPlayer(ctx, player, camera, time) {
   ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
   ctx.fill();
 
-  // Unutrašnji odsjaj
   ctx.shadowBlur = 0;
   ctx.fillStyle = "rgba(255,255,255,0.9)";
   ctx.beginPath();
   ctx.arc(cx - r * 0.35, cy - r * 0.35, r * 0.25 * scale, 0, Math.PI * 2);
   ctx.fill();
 
-  // Pulsirajući prsten (suptilan)
   const pulse = 1 + Math.sin(time * 3) * 0.06;
   ctx.strokeStyle = `hsla(${player.trailHue}, 100%, 85%, 0.4)`;
   ctx.lineWidth = 1.5;
