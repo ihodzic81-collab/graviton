@@ -4,10 +4,11 @@
 // ============================================================
 
 export const input = {
-  x: 0,           // -1 do 1
-  jump: false,    // pritisnuto ovaj frame
+  x: 0,
+  jump: false,
   jumpHeld: false,
-  gravity: false  // pritisnuto ovaj frame
+  gravity: false,
+  rotate: false
 };
 
 let jumpPressedThisFrame = false;
