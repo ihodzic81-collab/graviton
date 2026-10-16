@@ -4,15 +4,16 @@
 // ============================================================
 
 export const input = {
-  x: 0,
-  jump: false,
+  x: 0,           // -1 do 1
+  jump: false,    // pritisnuto ovaj frame
   jumpHeld: false,
-  gravity: false,
-  rotate: false
+  gravity: false, // pritisnuto ovaj frame
+  rotate: false   // pritisnuto ovaj frame (samo Nivo 3 i 4)
 };
 
 let jumpPressedThisFrame = false;
 let gravityPressedThisFrame = false;
+let rotatePressedThisFrame = false;
 
 // ---------- JOYSTICK ----------
 let joystickEl = null;
@@ -55,6 +56,21 @@ export function initControls() {
     btnGravity.addEventListener("touchend", (e) => { e.preventDefault(); }, { passive: false });
     btnGravity.addEventListener("mousedown", onGravityDown);
   }
+
+  // Dugme ROTACIJA (dinamički — postoji samo u Nivou 3 i 4)
+  // Koristimo delegaciju na document jer se dugme može pojaviti kasnije
+  document.addEventListener("touchstart", (e) => {
+    if (e.target.closest("#btn-rotate")) {
+      e.preventDefault();
+      onRotateDown();
+    }
+  }, { passive: false });
+
+  document.addEventListener("mousedown", (e) => {
+    if (e.target.closest("#btn-rotate")) {
+      onRotateDown();
+    }
+  });
 
   // Tastatura (testiranje)
   window.addEventListener("keydown", onKeyDown);
@@ -132,6 +148,11 @@ function onGravityDown() {
   gravityPressedThisFrame = true;
 }
 
+// ---------- ROTACIJA ----------
+function onRotateDown() {
+  rotatePressedThisFrame = true;
+}
+
 // ---------- TASTATURA ----------
 const keys = {};
 
@@ -144,6 +165,9 @@ function onKeyDown(e) {
   }
   if (e.key === "g" || e.key === "G" || e.key === "ArrowDown") {
     onGravityDown();
+  }
+  if (e.key === "r" || e.key === "R") {
+    onRotateDown();
   }
 }
 
@@ -165,10 +189,12 @@ export function updateControls() {
 
   input.jump = jumpPressedThisFrame;
   input.gravity = gravityPressedThisFrame;
+  input.rotate = rotatePressedThisFrame;
 }
 
 // Resetuje "pressed this frame" flagove — poziva se na kraju frame-a
 export function clearFrameInput() {
   jumpPressedThisFrame = false;
   gravityPressedThisFrame = false;
+  rotatePressedThisFrame = false;
 }
