@@ -1,13 +1,17 @@
-// Ulazna tačka igre.
-// Povezuje navigaciju, pozadinu, profil, podešavanja i prikaz podataka.
+// ============================================================
+// GRAVITON — Ulazna tačka
+// Povezuje navigaciju, pozadinu, profil, podešavanja i igru.
+// ============================================================
 
 import { initNavigation, showScreen } from "./navigation.js";
 import { initBackground } from "./background.js";
-import { getState, setNickname } from "./profile.js";
+import { getState, setNickname, markLevelCompleted, addPuls } from "./profile.js";
 import { applyReducedMotion, getSettings, setSetting } from "./settings.js";
 import { CHAPTERS, getTotalLevels } from "./levels.js";
 import { resetState } from "./storage.js";
+import { initGame, startLevel, stopGame, setGameSettings } from "./game.js";
 
+// ---------- POMOĆNE ----------
 function toast(msg, ms = 1800) {
   const el = document.getElementById("toast");
   if (!el) return;
@@ -17,6 +21,7 @@ function toast(msg, ms = 1800) {
   toast._t = setTimeout(() => el.classList.remove("is-show"), ms);
 }
 
+// ---------- PRIKAZ PODATAKA ----------
 function refreshHeader() {
   const state = getState();
   const pulsEl = document.getElementById("puls-value");
@@ -32,13 +37,9 @@ function refreshHome() {
   const completed = state.progress.completedLevels.length;
   const total = getTotalLevels();
 
-  if (completed === 0) {
-    label.textContent = "ZAPOČNI IGRU";
-  } else if (completed >= total) {
-    label.textContent = "PONOVI AVANTURU";
-  } else {
-    label.textContent = "NASTAVI AVANTURU";
-  }
+  if (completed === 0) label.textContent = "ZAPOČNI IGRU";
+  else if (completed >= total) label.textContent = "PONOVI AVANTURU";
+  else label.textContent = "NASTAVI AVANTURU";
 }
 
 function refreshLevels() {
@@ -76,7 +77,7 @@ function refreshLevels() {
           toast("Nivo je još zaključan.");
           return;
         }
-        toast("Igra počinje u Fazi 2. Za sada je dostupan samo temelj.");
+        startGameLevel(lvl.n);
       });
 
       grid.appendChild(card);
@@ -87,9 +88,7 @@ function refreshLevels() {
 function refreshProfile() {
   const state = getState();
   const nick = document.getElementById("nickname");
-  if (nick && document.activeElement !== nick) {
-    nick.value = state.profile.nickname;
-  }
+  if (nick && document.activeElement !== nick) nick.value = state.profile.nickname;
   const s1 = document.getElementById("stat-levels");
   const s2 = document.getElementById("stat-puls");
   const s3 = document.getElementById("stat-badges");
@@ -108,16 +107,59 @@ function refreshSettings() {
   if (sfx) sfx.checked = s.sfx;
   if (rm) rm.checked = s.reducedMotion;
   if (lang) lang.value = s.lang;
+  // Prosledi igri
+  setGameSettings(s);
 }
 
+// ---------- POKRETANJE NIVOA ----------
+function startGameLevel(n) {
+  // Sakrij menije
+  document.getElementById("game-layer")?.classList.add("is-active");
+  showScreen("__game__"); // skriva sve ekrane
+  // Zapravo: navigacija ne poznaje "__game__" pa nas vodi na "home"
+  // Zato koristimo direktno sakrivanje
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("is-active"));
+  document.querySelector(".bottom-nav")?.setAttribute("style", "display:none;");
+  document.querySelector(".topbar")?.setAttribute("style", "display:none;");
+  document.getElementById("app")?.setAttribute("style", "background:transparent;");
+
+  // Primeni podešavanja igre
+  setGameSettings(getSettings());
+
+  // Pokreni nivo
+  startLevel(n, {
+    onExit: returnToMenu,
+    onComplete: (result) => {
+      // Sačuvaj napredak
+      markLevelCompleted(result.levelNumber, {
+        time: result.time,
+        puls: result.puls
+      });
+      addPuls(result.puls);
+      refreshHeader();
+      refreshProfile();
+    }
+  });
+}
+
+function returnToMenu() {
+  // Vrati menije
+  document.querySelector(".bottom-nav")?.removeAttribute("style");
+  document.querySelector(".topbar")?.removeAttribute("style");
+  document.getElementById("app")?.removeAttribute("style");
+  showScreen("home");
+  refreshHeader();
+  refreshHome();
+  refreshLevels();
+  refreshProfile();
+}
+
+// ---------- DOGAĐAJI ----------
 function bindEvents() {
   document.getElementById("btn-play")?.addEventListener("click", () => {
     const state = getState();
-    if (state.progress.completedLevels.length === 0) {
-      toast("Dobrodošao! Prvi nivo stiže u Fazi 2.");
-    } else {
-      toast("Nastavljaš avanturu. Nivoi stižu u Fazi 2.");
-    }
+    const next = state.progress.unlockedLevels || 1;
+    startGameLevel(next);
   });
 
   document.getElementById("btn-profile")?.addEventListener("click", () => showScreen("profile"));
@@ -132,10 +174,21 @@ function bindEvents() {
     });
   }
 
-  document.getElementById("opt-music")?.addEventListener("change", e => setSetting("music", e.target.checked));
-  document.getElementById("opt-sfx")?.addEventListener("change", e => setSetting("sfx", e.target.checked));
-  document.getElementById("opt-reduced")?.addEventListener("change", e => setSetting("reducedMotion", e.target.checked));
-  document.getElementById("opt-lang")?.addEventListener("change", e => setSetting("lang", e.target.value));
+  document.getElementById("opt-music")?.addEventListener("change", e => {
+    setSetting("music", e.target.checked);
+    setGameSettings(getSettings());
+  });
+  document.getElementById("opt-sfx")?.addEventListener("change", e => {
+    setSetting("sfx", e.target.checked);
+    setGameSettings(getSettings());
+  });
+  document.getElementById("opt-reduced")?.addEventListener("change", e => {
+    setSetting("reducedMotion", e.target.checked);
+    setGameSettings(getSettings());
+  });
+  document.getElementById("opt-lang")?.addEventListener("change", e => {
+    setSetting("lang", e.target.value);
+  });
 
   document.getElementById("btn-reset")?.addEventListener("click", () => {
     if (confirm("Obrisati sav napredak? Ova radnja se ne može poništiti.")) {
@@ -153,10 +206,15 @@ function bindEvents() {
   });
 }
 
+// ---------- START ----------
 function boot() {
   applyReducedMotion();
   initNavigation();
   initBackground();
+  initGame({
+    onExit: returnToMenu,
+    onComplete: () => {}
+  });
   bindEvents();
   refreshHeader();
   refreshHome();
