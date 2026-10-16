@@ -1,0 +1,11 @@
+/* Ovde će ići stilovi samog igrališta u Fazi 2.
+   Za sada držimo prazan prostor da ne bismo morali da menjamo
+   index.html kasnije. */
+
+.game-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: none;
+}
+.game-layer.is-active { display: block; }
