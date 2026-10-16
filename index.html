@@ -173,6 +173,76 @@
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 
+  <!-- ============================================================
+       SLOJ IGRE
+       ============================================================ -->
+  <div id="game-layer" class="game-layer" aria-hidden="true">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- HUD -->
+    <div class="game-hud">
+      <div class="hud-left">
+        <span class="hud-level-num" id="hud-level-num">NIVO 1</span>
+        <span class="hud-level-name" id="hud-level-name">KOSMIČKA PADINA</span>
+      </div>
+      <div class="hud-right">
+        <button class="hud-btn pause-icon" id="btn-pause" aria-label="Pauza"></button>
+      </div>
+    </div>
+
+    <!-- KONTROLE -->
+    <div class="game-controls">
+      <div class="joystick" id="joystick">
+        <span class="joystick-hint">POMERAJ</span>
+        <div class="joystick-knob" id="joystick-knob"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="action-btn btn-gravity" id="btn-gravity" aria-label="Gravitacija">
+          <span class="btn-label">GRAV</span>
+        </button>
+        <button class="action-btn btn-jump" id="btn-jump" aria-label="Skok">
+          <span class="btn-label">SKOK</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PORUKE -->
+    <div class="game-toast" id="game-toast"></div>
+
+    <!-- PAUZA -->
+    <div class="pause-overlay" id="pause-overlay">
+      <h2 class="pause-title">PAUZA</h2>
+      <button class="pause-btn primary" id="btn-resume">NASTAVI</button>
+      <button class="pause-btn" id="btn-restart">PONOVI NIVO</button>
+      <button class="pause-btn" id="btn-exit">IZLAZ</button>
+    </div>
+
+    <!-- POBEDA -->
+    <div class="win-overlay" id="win-overlay">
+      <span class="win-badge">NIVO ZAVRŠEN</span>
+      <h2 class="win-title">BRAVO!</h2>
+      <p class="win-subtitle" id="win-subtitle">KOSMIČKA PADINA</p>
+
+      <div class="win-stats">
+        <div class="win-stat">
+          <span class="win-stat-value" id="win-time">0.0s</span>
+          <span class="win-stat-label">VREME</span>
+        </div>
+        <div class="win-stat">
+          <span class="win-stat-value" id="win-puls">+0</span>
+          <span class="win-stat-label">PULS</span>
+        </div>
+      </div>
+
+      <div class="win-actions">
+        <button class="win-btn primary" id="btn-next">SLEDEĆI NIVO</button>
+        <button class="win-btn" id="btn-retry">PONOVI</button>
+        <button class="win-btn" id="btn-win-exit">IZLAZ</button>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
