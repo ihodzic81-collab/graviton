@@ -44,6 +44,7 @@ export function loadLevel(n) {
   const checkpoint = { x: 0, y: 0 };
   let hasCheckpoint = false;
   let maxX = 0;
+  let maxY = 0;
 
   for (let row = 0; row < raw.map.length; row++) {
     const line = raw.map[row];
@@ -52,6 +53,7 @@ export function loadLevel(n) {
       const x = col * TILE;
       const y = row * TILE;
       maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
 
       if (ch === "#") {
         platforms.push({ x, y, w: TILE, h: TILE, type: "ground" });
@@ -73,9 +75,9 @@ export function loadLevel(n) {
   }
 
   const width = maxX + TILE;
-  const height = raw.map.length * TILE;
+  const height = maxY + TILE;
 
-  // Spajamo susedne platforme istog tipa u šire blokove (optimizacija crtanja i sudara)
+  // Spajamo susedne platforme istog tipa u šire blokove
   const merged = mergePlatforms(platforms);
 
   return {
@@ -91,7 +93,6 @@ export function loadLevel(n) {
 }
 
 function mergePlatforms(platforms) {
-  // Grupisanje po tipu i po y koordinati, pa spajanje horizontalno
   const byTypeY = new Map();
   for (const p of platforms) {
     const key = `${p.type}_${p.y}`;
