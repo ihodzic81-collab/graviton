@@ -26,7 +26,7 @@ export function initAudio() {
     masterGain.connect(ctx.destination);
 
     musicGain = ctx.createGain();
-    musicGain.gain.value = 0.35;
+    musicGain.gain.value = 0.12; // tiša muzika — manje "hum"
     musicGain.connect(masterGain);
 
     sfxGain = ctx.createGain();
@@ -39,7 +39,7 @@ export function initAudio() {
 
 export function setAudioSettings(settings) {
   currentSettings = { ...currentSettings, ...settings };
-  if (musicGain) musicGain.gain.value = currentSettings.music ? 0.35 : 0;
+  if (musicGain) musicGain.gain.value = currentSettings.music ? 0.12 : 0;
   if (sfxGain) sfxGain.gain.value = currentSettings.sfx ? 0.6 : 0;
 }
 
@@ -135,7 +135,6 @@ export function sfxFall() {
 
 export function sfxRespawn() {
   if (!ctx || !currentSettings.sfx) return;
-  // Mistični whoosh — dva sloja
   const osc1 = ctx.createOscillator();
   const osc2 = ctx.createOscillator();
   const g = ctx.createGain();
@@ -178,61 +177,75 @@ export function sfxWin() {
 
 // ---------- MUZIKA (ambijent) ----------
 // Mistični, opuštajući pad — bez prekida.
-// Dinamika: gain se prilagođava stanju igre.
+// Bazni drone je sada mnogo tiši i filtriran, da ne bude nametljiv.
 
-let targetMusicVolume = 0.35;
+let ambientStarted = false;
 
 export function startAmbientMusic() {
   if (!ctx || ambientStarted) return;
   ambientStarted = true;
 
-  // Bazni drone — dva oscilatora blago razdvojena
-  const droneFreqs = [110, 164.81]; // A2 + E3
+  // Niski filter za ceo ambijent — uklanja oštre tonove
+  const ambientFilter = ctx.createBiquadFilter();
+  ambientFilter.type = "lowpass";
+  ambientFilter.frequency.value = 500;
+  ambientFilter.Q.value = 0.5;
+  ambientFilter.connect(musicGain);
+
+  // Bazni drone — sada sa mnogo tišim gain-om (0.025 umesto 0.08)
+  // i jednim oscilatorom umesto dva — manje "hum"
+  const droneFreqs = [82.41]; // E2 — dublji, topliji ton
   droneFreqs.forEach((f, i) => {
     const osc = ctx.createOscillator();
     const g = ctx.createGain();
-    osc.type = i === 0 ? "sine" : "triangle";
+    osc.type = "sine"; // sine je najmirniji
     osc.frequency.value = f;
-    g.gain.value = 0.08;
+    g.gain.value = 0.025; // veoma tiho
     osc.connect(g);
-    g.connect(musicGain);
+    g.connect(ambientFilter);
     osc.start();
     musicNodes.push({ osc, g });
   });
 
-  // Mistični LFO za blago pomeranje
+  // Blagi "padajući" LFO za mističan efekat — ali diskretan
   const lfo = ctx.createOscillator();
   const lfoGain = ctx.createGain();
-  lfo.frequency.value = 0.08;
-  lfoGain.gain.value = 3;
+  lfo.frequency.value = 0.05;
+  lfoGain.gain.value = 1.5;
   lfo.connect(lfoGain);
-  musicNodes.forEach(n => lfoGain.connect(n.osc.frequency));
+  musicNodes.forEach(n => {
+    if (n.osc && n.osc.frequency) lfoGain.connect(n.osc.frequency);
+  });
   lfo.start();
   musicNodes.push({ osc: lfo, g: lfoGain });
 
-  // Melodija — povremeni tonovi
-  const scale = [523.25, 587.33, 659.25, 783.99, 880]; // C5 D5 E5 G5 A5
+  // Melodija — povremeni tonovi, sada ređi i tiši
+  const scale = [523.25, 587.33, 659.25, 783.99, 880];
   function scheduleNote() {
-    if (!ctx || !currentSettings.music) {
-      musicTimer = setTimeout(scheduleNote, 2000);
-      return;
+    if (!ctx) return;
+    if (currentSettings.music) {
+      const freq = scale[Math.floor(Math.random() * scale.length)];
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      const noteFilter = ctx.createBiquadFilter();
+      noteFilter.type = "lowpass";
+      noteFilter.frequency.value = 1200;
+
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      g.gain.setValueAtTime(0, now());
+      g.gain.linearRampToValueAtTime(0.04, now() + 1.2); // tiše
+      g.gain.exponentialRampToValueAtTime(0.0001, now() + 4.5);
+      osc.connect(noteFilter);
+      noteFilter.connect(g);
+      g.connect(musicGain);
+      osc.start();
+      osc.stop(now() + 5);
     }
-    const freq = scale[Math.floor(Math.random() * scale.length)];
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = "sine";
-    osc.frequency.value = freq;
-    g.gain.setValueAtTime(0, now());
-    g.gain.linearRampToValueAtTime(0.05, now() + 0.8);
-    g.gain.exponentialRampToValueAtTime(0.0001, now() + 3.5);
-    osc.connect(g);
-    g.connect(musicGain);
-    osc.start();
-    osc.stop(now() + 3.8);
-    // Slučajni interval 2.5–5s
-    musicTimer = setTimeout(scheduleNote, 2500 + Math.random() * 2500);
+    // Interval 4–8 sekundi — ređe, mirnije
+    musicTimer = setTimeout(scheduleNote, 4000 + Math.random() * 4000);
   }
-  setTimeout(scheduleNote, 1500);
+  setTimeout(scheduleNote, 2500);
 }
 
 export function stopAmbientMusic() {
@@ -245,16 +258,16 @@ export function stopAmbientMusic() {
 }
 
 // ---------- DINAMIKA ----------
-// Poziva se iz game.js da muzika prati stanje igre.
+// Muzika prati stanje igre, ali sa mnogo manjim promenama.
 // state: "idle" | "moving" | "falling" | "win"
 export function updateMusicDynamics(state) {
   if (!ctx || !musicGain) return;
-  let target = 0.35;
-  if (state === "moving") target = 0.45;
-  else if (state === "falling") target = 0.28;
-  else if (state === "win") target = 0.6;
+  let target = 0.12;
+  if (state === "moving") target = 0.16;
+  else if (state === "falling") target = 0.10;
+  else if (state === "win") target = 0.22;
 
   const t = now();
   musicGain.gain.cancelScheduledValues(t);
-  musicGain.gain.linearRampToValueAtTime(target, t + 0.6);
+  musicGain.gain.linearRampToValueAtTime(target, t + 0.8);
 }
